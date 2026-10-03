@@ -1,0 +1,123 @@
+!
+! CORE2 - Sanitized portfolio configuration
+! Enterprise Network PNETLab Project
+! Captured from selected running-config sections.
+!
+hostname CORE2
+!
+interface Loopback0
+ ip address 22.22.22.22 255.255.255.255
+!
+interface Ethernet0/0
+ no switchport
+ ip address 172.16.1.1 255.255.255.252
+!
+interface Ethernet0/1
+ no switchport
+ ip address 172.16.2.1 255.255.255.252
+!
+interface Ethernet0/2
+ no switchport
+ ip address 172.16.3.1 255.255.255.252
+!
+interface Ethernet0/3
+ no switchport
+ ip address 172.16.4.1 255.255.255.252
+!
+interface Ethernet1/0
+ no switchport
+ ip address 172.16.5.1 255.255.255.252
+!
+interface Ethernet1/1
+ no switchport
+ ip address 172.16.6.1 255.255.255.252
+!
+interface Ethernet1/2
+ no switchport
+ ip address 10.255.11.2 255.255.255.252
+!
+interface Ethernet1/3
+ no switchport
+ no ip address
+!
+interface Ethernet2/0
+ no switchport
+ ip address 10.255.0.2 255.255.255.252
+!
+interface Ethernet2/1
+!
+interface Ethernet2/2
+!
+interface Ethernet2/3
+!
+interface Ethernet3/0
+!
+interface Ethernet3/1
+!
+interface Ethernet3/2
+!
+interface Ethernet3/3
+!
+router eigrp 100
+ network 172.16.0.0
+ network 172.16.1.0 0.0.0.255
+ network 172.16.1.0 0.0.0.3
+ network 172.16.2.0 0.0.0.255
+ network 172.16.2.0 0.0.0.3
+ redistribute ospf 1 metric 10000 100 255 1 1500
+ redistribute ospf 2 metric 10000 100 255 1 1500
+ redistribute static metric 100000 100 255 1 150
+!
+router ospf 1
+ redistribute eigrp 100 metric-type 1 subnets
+ redistribute bgp 65000 metric-type 1 subnets
+ network 10.30.50.0 0.0.0.255 area 20
+ network 10.30.60.0 0.0.0.255 area 20
+ network 10.30.254.4 0.0.0.3 area 20
+ network 10.255.11.0 0.0.0.3 area 0
+ network 22.22.22.22 0.0.0.0 area 0
+ network 172.16.0.0 0.0.0.255 area 10
+ network 172.16.4.0 0.0.0.3 area 20
+ network 172.16.0.0 0.0.255.255 area 10
+ default-information originate
+!
+router ospf 2
+ redistribute static metric-type 1 subnets
+ network 10.30.50.0 0.0.0.255 area 20
+ network 10.30.60.0 0.0.0.255 area 20
+ network 10.30.254.0 0.0.0.3 area 20
+ network 172.16.3.0 0.0.0.255 area 20
+ network 172.16.4.0 0.0.0.255 area 20
+!
+router bgp 65000
+ bgp router-id 22.22.22.22
+ bgp log-neighbor-changes
+ no bgp default ipv4-unicast
+ neighbor 1.1.1.1 remote-as 65000
+ neighbor 1.1.1.1 description EDGE1-RR-CLIENT
+ neighbor 1.1.1.1 update-source Loopback0
+ neighbor 2.2.2.2 remote-as 65000
+ neighbor 2.2.2.2 description EDGE2-RR-CLIENT
+ neighbor 2.2.2.2 update-source Loopback0
+ neighbor 11.11.11.11 remote-as 200
+ neighbor 11.11.11.11 description EDGE2-iBGP
+ neighbor 11.11.11.11 update-source Loopback0
+ !
+ address-family ipv4
+  redistribute eigrp 100
+  redistribute ospf 1
+  neighbor 1.1.1.1 activate
+  neighbor 1.1.1.1 route-reflector-client
+  neighbor 1.1.1.1 next-hop-self
+  neighbor 2.2.2.2 activate
+  neighbor 2.2.2.2 route-reflector-client
+  neighbor 2.2.2.2 next-hop-self
+ exit-address-family
+!
+ip route 0.0.0.0 0.0.0.0 10.255.11.1
+!
+! Note: An OSPF FLOOD_WAR log message appeared in the console after
+! one verification command. It was operational console output, not
+! part of the running configuration, so it is intentionally excluded.
+!
+end
